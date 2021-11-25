@@ -1,13 +1,14 @@
 import aiohttp
 import asyncio
+import sys
 import yarl
 import re
 import requests
 
 def handle(r):
     # 数据处理
-    # 数据有status,text,len,自己写规则过滤
-    if r.len > 10:
+    # 数据有status,text,len自己写规则过滤
+    if r.status == 200:
         print(r.url, r.len)
 
 async def main(url, data={}, cookies={}):
@@ -45,8 +46,16 @@ async def parse(URLS):
     results = await asyncio.gather(*tasks)
 
 if __name__ == '__main__':
-    URLs = []  # 填写url队列
-    loop = asyncio.get_event_loop()
-    task = loop.create_task(parse(URLs))
-    loop.run_until_complete(task)
+    if len(sys.argv) == 2:
+        file = sys.argv[1]
+        with open(file, 'r') as F:
+            URLs = [x.strip() for x in F]
+    else:
+        URLs = []  # 填写url队列
+    if URLs == []:
+        print('usage: python3 run_urls.py urls.txt')
+    else:
+        loop = asyncio.get_event_loop()
+        task = loop.create_task(parse(URLs))
+        loop.run_until_complete(task)
 
